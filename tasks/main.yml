@@ -1,0 +1,9 @@
+---
+- name: Fail when type is not supported
+  fail:
+    msg: "mysql_log_cleanup_log_type key is missing or type is not supported"
+  when: mysql_log_cleanup_log_type not in ('slow')
+
+- name: Remove slow queries log file
+  include: slow_log.yml
+  when: mysql_log_cleanup_log_type == "slow"
