@@ -1,0 +1,8 @@
+---
+mysql_log_cleanup_image: "mariadb:10.3.22"
+mysql_log_cleanup_filename: "mariadb-slow.log"
+mysql_log_cleanup_log_type: "slow"
+mysql_log_cleanup_database_host: "localhost"
+mysql_log_cleanup_database_user: "root"
+mysql_log_cleanup_database_password: "pass"
+mysql_log_cleanup_database_port: 3306

@@ -1,0 +1,49 @@
+---
+- name: Construct unique container name
+  set_fact:
+    container_name: "mysql-slow-log-cleanup-{{ ansible_date_time.iso8601_micro | to_uuid }}"
+
+- name: Start mysql slow log query cleanup container
+  docker_container:
+    name: "{{ container_name }}"
+    image: "{{ mysql_log_cleanup_image }}"
+    env:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    networks: "{{ mysql_log_cleanup_network }}"
+    volumes:
+      - "{{ mysql_log_cleanup_volume }}:/var/log/mysql"
+
+- name: Stop slow logging
+  command: |
+    docker exec {{ container_name }} sh -c
+    "mysql -h {{ mysql_log_cleanup_database_host }} -u{{ mysql_log_cleanup_database_user }} \
+    -p{{ mysql_log_cleanup_database_password }} -P{{ mysql_log_cleanup_database_port }} \
+    -e \"SET GLOBAL slow_query_log=0;\""
+
+- name: Remove slow log file
+  command: |
+    docker exec {{ container_name }} sh -c
+    "rm -f /var/log/mysql/{{ mysql_log_cleanup_filename }}"
+
+- name: Start slow logging
+  command: |
+    docker exec {{ container_name }} sh -c
+    "mysql -h {{ mysql_log_cleanup_database_host }} -u{{ mysql_log_cleanup_database_user }} \
+    -p{{ mysql_log_cleanup_database_password }} -P{{ mysql_log_cleanup_database_port }} \
+    -e \"SET GLOBAL slow_query_log=1;\""
+
+- name: Ensure slow logging is enabled
+  command: |
+    docker exec {{ container_name }} sh -c
+    "cat /var/log/mysql/{{ mysql_log_cleanup_filename }} | wc -l | xargs"
+  register: stat_result
+
+- name: Destroy mysql slow log query cleanup container
+  docker_container:
+    name: "{{ container_name }}"
+    state: absent
+
+- name: Fail if slow query logging didn't start
+  fail:
+    msg: "Slow query logging didn't start properly"
+  when: stat_result.stdout | int == 0

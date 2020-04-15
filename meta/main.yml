@@ -1,0 +1,23 @@
+---
+dependencies: []
+
+galaxy_info:
+  author: brnck
+  description: Mysql log cleanup from docker container.
+  company: "Paysera, LTD"
+  license: "license (BSD, MIT)"
+  min_ansible_version: 2.8
+  platforms:
+    - name: Debian
+      versions:
+        - jessie
+        - stretch
+    - name: Ubuntu
+      versions:
+        - bionic
+        - xenial
+  galaxy_tags:
+    - database
+    - docker
+    - cloud
+    - automation
